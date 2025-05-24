@@ -1,0 +1,42 @@
+<launch>
+  <!-- Hardware Parameters -->
+  <param name="use_sim_time" value="false"/>
+  
+  <!-- Motor Controller -->
+  <node name="wheelchair_motor_driver" pkg="smart_wheelchair_stvl_nav" type="wheelchair_motor_driver" output="screen">
+    <param name="wheel_separation" value="0.6"/>
+    <param name="wheel_radius" value="0.15"/>
+    <param name="motor_port" value="/dev/ttyUSB0"/>
+    <param name="baud_rate" value="115200"/>
+  </node>
+  
+  <!-- LiDAR Hardware -->
+  <node name="lidar_hardware" pkg="smart_wheelchair_stvl_nav" type="lidar_hardware_node.py" output="screen">
+    <param name="serial_port" value="/dev/ttyUSB1"/>
+    <param name="baud_rate" value="230400"/>
+    <param name="frame_id" value="laser_link"/>
+  </node>
+  
+  <!-- IMU Hardware -->
+  <node name="phidgets_imu" pkg="phidgets_spatial" type="spatial" output="screen">
+    <param name="serial" value="123456"/>
+    <param name="frame_id" value="imu_link"/>
+    <param name="data_interval_ms" value="10"/>
+  </node>
+  
+  <!-- Encoder Odometry -->
+  <node name="encoder_odometry" pkg="smart_wheelchair_stvl_nav" type="encoder_odometry_node.py" output="screen">
+    <param name="left_encoder_pin" value="18"/>
+    <param name="right_encoder_pin" value="19"/>
+    <param name="pulses_per_revolution" value="1024"/>
+  </node>
+  
+  <!-- Transform Publishers -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  
+  <!-- Static transforms for sensors -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_broadcaster" 
+        args="0.3 0 0.2 0 0 0 base_link laser_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_broadcaster" 
+        args="0 0 0.1 0 0 0 base_link imu_link"/>
+</launch>
