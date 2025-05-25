@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<!--
+  Robot SLAM Launch File
+  
+  This launch file sets up a complete SLAM system using:
+  - IMU sensor for orientation data
+  - RealSense camera for RGB-D data
+  - RPLidar for 2D laser scanning
+  - RTAB-Map for SLAM
+  - Robot Localization EKF for sensor fusion
+  
+-->
+
+<launch>
+  <!-- ========================================================================== -->
+  <!-- SENSOR HARDWARE LAUNCHES                                                  -->
+  <!-- ========================================================================== -->
+  
+  <!-- Launch IMU sensor with RViz visualization -->
+  <include file="$(find my_imu_package)/launch/my_imu_with_rviz.launch" />
+  
+  <!-- Launch RealSense camera -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch" />
+  
+  <!-- Launch RPLidar A1 -->
+  <include file="$(find rplidar_ros)/launch/rplidar_a1.launch" />
+
+  <!-- ========================================================================== -->
+  <!-- STATIC TRANSFORM PUBLISHERS - ROBOT TF TREE                               -->
+  <!-- ========================================================================== -->
+  
+  <!-- Transform from base_link to camera_link -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="camera_link_to_base_link" 
+        args="0 0 0 0 0 0 base_link camera_link" />
+  
+  <!-- Transform from base_link to IMU link -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="imu_to_base_link" 
+        args="0 0 0 0 0 0 base_link imu_link" />
+  
+  <!-- Transform from base_link to camera color optical frame -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="camera_to_base_link" 
+        args="0 0 0 0 0 0 base_link camera__color_optical_frame" />
+  
+  <!-- Transform from base_link to camera depth optical frame -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="depth_camera_to_base_link" 
+        args="0 0 0 0 0 0 base_link camera__depth_optical_frame" />
+  
+  <!-- Transform from base_link to laser scanner -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="laser_to_base_link" 
+        args="0 0 0 1.57 0 0 base_link laser" />
+
+  <!-- ========================================================================== -->
+  <!-- ODOMETRY AND LOCALIZATION                                                  -->
+  <!-- ========================================================================== -->
+  
+  <!-- ICP Odometry using laser scan data -->
+  <node pkg="rtabmap_odom" 
+        type="icp_odometry" 
+        name="icp_odometry" 
+        output="screen">
+    <param name="frame_id" value="camera_link" />
+    <param name="approx_sync" value="true" />
+  </node>
+  
+  <!-- Extended Kalman Filter for sensor fusion -->
+  <node pkg="robot_localization" 
+        type="ekf_localization_node" 
+        name="ekf_localization_node" 
+        output="screen">
+    <param name="use_sim_time" value="false" />
+    <rosparam command="load" file="$(find lam_pkg)/config/ekf.yaml" />
+  </node>
+
+  <!-- ========================================================================== -->
+  <!-- RTAB-MAP SLAM                                                              -->
+  <!-- ========================================================================== -->
+  
+  <!-- RTAB-Map SLAM with RGB-D camera and laser scan -->
+  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+    <!-- RTAB-Map arguments -->
+    <arg name="rtabmap_args" value="--delete_db_on_start" />
+    
+    <!-- Sensor topics -->
+    <arg name="depth_topic" value="/camera/depth/image_rect_raw" />
+    <arg name="rgb_topic" value="/camera/color/image_raw" />
+    <arg name="camera_info_topic" value="/camera/color/camera_info" />
+    <arg name="scan_topic" value="/scan" />
+    <arg name="odom_topic" value="/odometry/filtered" />
+    
+    <!-- Synchronization and odometry settings -->
+    <arg name="approx_sync" value="true" />
+    <arg name="subscribe_scan" value="false" />
+    <arg name="visual_odometry" value="false" />
+    <arg name="icp_odometry" value="false" />
+    
+    <!-- Frame settings -->
+    <arg name="odom_frame_id" value="odom" />
+    <arg name="frame_id" value="base_link" />
+  </include>
+
+  <!-- ========================================================================== -->
+  <!-- ALTERNATIVE/EXPERIMENTAL CONFIGURATIONS (COMMENTED OUT)                   -->
+  <!-- ========================================================================== -->
+  
+  <!--
+    Alternative RGB-D Odometry Configuration:
+    Uncomment this section if you want to use RGB-D odometry instead of ICP odometry
+    
+    <node pkg="rtabmap_odom" type="rgbd_odometry" name="rgbd_odometry" output="screen">
+      <param name="frame_id" value="base_link" />
+      <param name="approx_sync" value="true" />
+      
+      <remap from="/rgb/image" to="/camera/color/image_raw" />
+      <remap from="/depth/image" to="/camera/depth/image_rect_raw" />
+      <remap from="/rgb/camera_info" to="/camera/color/camera_info" />
+    </node>
+  -->
+  
+  <!--
+    IMU Madgwick Filter Configuration:
+    Uncomment this section if you want to apply additional filtering to IMU data
+    
+    <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node" output="screen">
+      <param name="use_mag" value="false" />
+      <param name="fixed_frame" value="base_link" />
+    </node>
+  -->
+  
+  <!--
+    Alternative ICP Odometry with Custom Remapping:
+    This version remaps the output odometry topic
+    
+    <node pkg="rtabmap_odom" type="icp_odometry" name="icp_odometry" output="screen">
+      <param name="frame_id" value="base_link" />
+      <param name="approx_sync" value="true" />
+      <remap from="/odom" to="/odometry_icp" />
+    </node>
+  -->
+
+</launch>

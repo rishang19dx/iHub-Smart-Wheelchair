@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+  Hector SLAM with LiDAR Launch File
+  
+  This launch file sets up a complete 2D SLAM system using:
+  - RPLidar A1 for 2D laser scanning
+  - Hector SLAM for real-time mapping and localization
+  - RViz for visualization
+  
+  Purpose: 2D mapping and localization using only laser scan data
+  SLAM Algorithm: Hector SLAM (scan matching-based, no odometry required)
+  Advantage: Works without wheel encoders or IMU
+  Use Case: Robots without reliable odometry sources
+
+-->
+
+<launch>
+  <!-- ========================================================================== -->
+  <!-- GLOBAL PARAMETERS                                                          -->
+  <!-- ========================================================================== -->
+  
+  <!-- Disable simulation time - using real hardware -->
+  <param name="/use_sim_time" value="false" />
+
+  <!-- ========================================================================== -->
+  <!-- SENSOR HARDWARE LAUNCHES                                                  -->
+  <!-- ========================================================================== -->
+  
+  <!-- Launch RPLidar A1 for 2D laser scanning -->
+  <include file="$(find rplidar_ros)/launch/rplidar_a1.launch">
+    <!-- Optional: Uncomment and modify if using different serial port -->
+    <!-- <param name="serial_port" value="/dev/ttyUSB0" /> -->
+  </include>
+
+  <!-- ========================================================================== -->
+  <!-- STATIC TRANSFORM PUBLISHERS - ROBOT TF TREE                               -->
+  <!-- ========================================================================== -->
+  
+  <!-- Transform from base_link to laser scanner -->
+  <!-- Laser is mounted at the same position as robot center (no offset) -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="laser_to_base_link" 
+        args="0 0 0 0 0 0 base_link laser" />
+  
+  <!-- Transform from odom to base_link -->
+  <!-- Static transform since Hector SLAM doesn't use odometry -->
+  <!-- Hector SLAM will provide map->odom transform dynamically -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="base_link_to_odom" 
+        args="0 0 0 0 0 0 odom base_link" />
+
+  <!-- ========================================================================== -->
+  <!-- 2D SLAM - HECTOR MAPPING                                                  -->
+  <!-- ========================================================================== -->
+  
+  <!-- Hector SLAM node for real-time 2D mapping -->
+  <!-- Uses scan matching algorithm - no odometry required -->
+  <node pkg="hector_mapping" 
+        type="hector_mapping" 
+        name="hector_mapping" 
+        output="screen">
+    
+    <!-- Frame configuration -->
+    <param name="base_frame" value="base_link" />     <!-- Robot base coordinate frame -->
+    <param name="odom_frame" value="odom" />          <!-- Odometry frame (not used by Hector) -->
+    <param name="map_frame" value="map" />            <!-- Global map coordinate frame -->
+    
+    <!-- Additional Hector SLAM parameters can be added here -->
+    <!-- Example parameters (uncomment and adjust as needed):
+    <param name="map_resolution" value="0.05" />
+    <param name="map_size" value="2048" />
+    <param name="map_start_x" value="0.5" />
+    <param name="map_start_y" value="0.5" />
+    <param name="map_multi_res_levels" value="2" />
+    <param name="update_factor_free" value="0.4" />
+    <param name="update_factor_occupied" value="0.9" />
+    <param name="map_update_distance_thresh" value="0.4" />
+    <param name="map_update_angle_thresh" value="0.06" />
+    -->
+  </node>
+
+  <!-- ========================================================================== -->
+  <!-- VISUALIZATION                                                              -->
+  <!-- ========================================================================== -->
+  
+  <!-- Launch RViz with Hector SLAM configuration -->
+  <node pkg="rviz" 
+        type="rviz" 
+        name="rviz" 
+        args="-d $(find hector_slam_launch)/rviz_cfg/mapping_demo.rviz" />
+
+</launch>

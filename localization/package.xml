@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>lam_pkg</name>
+  <version>0.0.0</version>
+  <description>The lam_pkg package</description>
+
+  <!-- Maintainer -->
+  <maintainer email="saatvik@todo.todo">saatvik</maintainer>
+
+  <!-- License -->
+  <license>MIT</license>
+
+  <!-- Build tool dependencies -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Build dependencies -->
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>tf2_sensor_msgs</build_depend>
+  <build_depend>realsense2_camera</build_depend>
+  <build_depend>rplidar_ros</build_depend>
+  <build_depend>rtabmap_odom</build_depend>
+  <build_depend>robot_localization</build_depend>
+  <build_depend>my_imu_package</build_depend>
+
+  <!-- Execution dependencies -->
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+  <exec_depend>tf2_sensor_msgs</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
+  <exec_depend>rplidar_ros</exec_depend>
+  <exec_depend>rtabmap_odom</exec_depend>
+  <exec_depend>robot_localization</exec_depend>
+  <exec_depend>my_imu_package</exec_depend>
+
+  <!-- Optional: run tests -->
+  <test_depend>gtest</test_depend>
+
+  <export>
+    <!-- Other tools can request additional information here -->
+  </export>
+</package>

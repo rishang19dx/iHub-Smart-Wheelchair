@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+  IMU with Madgwick Filter Launch File
+  
+  This launch file sets up an IMU system with attitude filtering:
+  - IMU sensor with RViz visualization
+  - Madgwick filter for orientation estimation from accelerometer and gyroscope
+  
+  Purpose: Filtered IMU orientation data without magnetometer
+  Use Case: Indoor environments where magnetometer data is unreliable
+  Filter: Madgwick algorithm for 6-DOF orientation estimation (accel + gyro only)
+
+-->
+
+<launch>
+  <!-- ========================================================================== -->
+  <!-- IMU SENSOR HARDWARE                                                        -->
+  <!-- ========================================================================== -->
+  
+  <!-- Launch IMU sensor with RViz visualization -->
+  <include file="$(find my_imu_package)/launch/my_imu_with_rviz.launch" />
+
+  <!-- ========================================================================== -->
+  <!-- IMU DATA FILTERING                                                         -->
+  <!-- ========================================================================== -->
+  
+  <!-- Madgwick filter for IMU orientation estimation -->
+  <!-- Fuses accelerometer and gyroscope data to produce stable orientation -->
+  <node pkg="imu_filter_madgwick" 
+        type="imu_filter_node" 
+        name="imu_filter_node" 
+        output="screen">
+    
+    <!-- Disable magnetometer usage (6-DOF instead of 9-DOF) -->
+    <!-- Recommended for indoor use where magnetic interference is common -->
+    <param name="use_mag" value="false" />
+    
+    <!-- Fixed frame for orientation reference -->
+    <!-- base_link is typically the robot's main coordinate frame -->
+    <param name="fixed_frame" value="base_link" />
+  </node>
+
+</launch>

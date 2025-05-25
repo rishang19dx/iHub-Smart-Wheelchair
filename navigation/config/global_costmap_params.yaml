@@ -1,0 +1,29 @@
+# global_costmap:
+#   global_frame: map
+#   robot_base_frame: base_link
+#   update_frequency: 5.0
+#   publish_frequency: 5.0
+#   static_map: true
+ 
+#   transform_tolerance: 1.0
+#   plugins:
+#     - {name: static_layer,            type: "costmap_2d::StaticLayer"}
+#     - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
+#     - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}
+
+#NEW
+global_costmap:
+  global_frame: map
+  robot_base_frame: base_link
+  update_frequency: 4.0
+  publish_frequency: 3.0
+  static_map: true
+ 
+  transform_tolerance: 0.5
+  plugins:
+     - {name: rgbd_obstacle_layer,     type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+     - {name: static_layer,            type: "costmap_2d::StaticLayer"}
+#     - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
+     - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}
+
+ 

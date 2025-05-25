@@ -1,0 +1,74 @@
+<launch>
+  <!-- ==================== SENSOR NODES ==================== -->
+  <!-- (1) IMU + RViz -->
+  <include file="$(find my_imu_package)/launch/my_imu_with_rviz.launch"/>
+
+  <!-- (2) RealSense RGB-D -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch"/>
+
+  <!-- (3) RPLIDAR A1 -->
+  <include file="$(find rplidar_ros)/launch/rplidar_a1.launch"/>
+
+  <!-- ==================== STATIC TRANSFORMS ==================== -->
+  <!-- camera_link ← base_link -->
+  <node pkg="tf2_ros" type="static_transform_publisher"
+        name="camera_link_to_base_link"
+        args="0 0 0.45 0 0 0 base_link camera_link 100"/>
+
+  <!-- color optical (if needed) -->
+  <node pkg="tf2_ros" type="static_transform_publisher"
+        name="camera_color_optical_to_base_link"
+        args="0 0 0.45 0 0 0 base_link camera_color_optical_frame 100"/>
+
+  <!-- depth optical (if needed) -->
+  <node pkg="tf2_ros" type="static_transform_publisher"
+        name="camera_depth_optical_to_base_link"
+        args="0 0 0.45 0 0 0 base_link camera_depth_optical_frame 100"/>
+
+  <!-- IMU → base_link -->
+  <node pkg="tf2_ros" type="static_transform_publisher"
+        name="imu_to_base_link"
+        args="0 0 0 0 0 0 base_link imu_link 100"/>
+
+  <!-- Laser → base_link -->
+  <node pkg="tf2_ros" type="static_transform_publisher"
+        name="laser_to_base_link"
+        args="0 0 0.15 0 0 0 base_link laser 100"/>
+
+  <node pkg="rtabmap_odom" type="rgbd_odometry" name="rgbd_odometry" output="screen">
+    <param name="frame_id" value="camera_link" />
+    <param name="approx_sync" value="true" />
+    
+    <remap from="/rgb/image" to="/camera/color/image_raw" />
+    <remap from="/depth/image" to="/camera/depth/image_rect_raw" />
+    <remap from="/rgb/camera_info" to="/camera/color/camera_info" />
+  </node>
+  
+  <!-- ==================== LOCALIZATION ==================== -->
+  <!-- EKF fuses IMU + odom (if any) → publishes /odometry/filtered -->
+  <node pkg="robot_localization" type="ekf_localization_node"
+        name="ekf_localization" output="screen">
+    <param name="use_sim_time" value="false"/>
+    <rosparam command="load"
+              file="$(find lam_pkg)/config/ekf.yaml"/>
+  </node>
+
+  <!-- ==================== RTAB-MAP ==================== -->
+  <!-- pass exactly the same args you had on the command line -->
+  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+    <!-- database -->
+    <arg name="rtabmap_args"
+         value="--delete_db_on_start --Optimizer/GravitySigma 0.3"/>
+    <!-- topics -->
+    <arg name="depth_topic"            value="/camera/depth/image_rect_raw"/>
+    <arg name="rgb_topic"              value="/camera/color/image_raw"/>
+    <arg name="camera_info_topic"      value="/camera/color/camera_info"/>
+    <arg name="approx_sync"            value="true"/>
+    <arg name="subscribe_scan"         value="true"/>
+    <arg name="scan_topic"             value="/scan"/>
+    <arg name="odom_topic"             value="/odometry/filtered"/>
+    <!-- disable visual odometry since you only want scan+EKF -->
+    <arg name="visual_odometry"        value="false"/>
+    <arg name="frame_id" value="base_link" />
+  </include>
+</launch>

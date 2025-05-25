@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+  Minimal IMU and Localization Launch File
+  
+  This launch file sets up a basic localization system using:
+  - IMU sensor for orientation data with RViz visualization
+  - Static transforms for camera optical frames
+  - Robot Localization EKF for sensor fusion
+  
+  Purpose: Basic sensor fusion and localization without SLAM
+  Use Case: Testing IMU integration and EKF localization
+
+-->
+
+<launch>
+  <!-- ========================================================================== -->
+  <!-- SENSOR HARDWARE LAUNCHES                                                  -->
+  <!-- ========================================================================== -->
+  
+  <!-- Launch IMU sensor with RViz visualization -->
+  <include file="$(find my_imu_package)/launch/my_imu_with_rviz.launch" />
+
+  <!-- ========================================================================== -->
+  <!-- STATIC TRANSFORM PUBLISHERS - CAMERA TO BASE TRANSFORMS                   -->
+  <!-- ========================================================================== -->
+  
+  <!-- Transform from camera color optical frame to base_link -->
+  <!-- Note: This establishes the relationship between camera and robot base -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="camera_to_base_link" 
+        args="0 0 0 0 0 0 camera__color_optical_frame base_link" />
+  
+  <!-- Transform from camera depth optical frame to base_link -->
+  <!-- Note: Depth camera frame alignment with robot base coordinate system -->
+  <node pkg="tf2_ros" 
+        type="static_transform_publisher" 
+        name="depth_camera_to_base_link" 
+        args="0 0 0 0 0 0 camera__depth_optical_frame base_link" />
+
+  <!-- ========================================================================== -->
+  <!-- SENSOR FUSION AND LOCALIZATION                                            -->
+  <!-- ========================================================================== -->
+  
+  <!-- Extended Kalman Filter for sensor fusion -->
+  <!-- Fuses IMU data with other available odometry sources -->
+  <node pkg="robot_localization" 
+        type="ekf_localization_node" 
+        name="ekf_localization_node" 
+        output="screen">
+    <param name="use_sim_time" value="false" />
+    <rosparam command="load" file="$(find lam_pkg)/config/ekf.yaml" />
+  </node>
+
+</launch>
