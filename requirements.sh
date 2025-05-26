@@ -1,28 +1,15 @@
 #!/bin/bash
 
-#==============================================================================
 # Complete ROS Packages Installation Script
-# 
-# This script installs all required ROS packages for:
-# - SLAM systems (RTAB-Map, Hector SLAM, GMapping)
-# - Sensor drivers (RealSense, RPLidar)
-# - Localization and navigation
-# - Visualization and utilities
-#
-# Author: [Your Name]
-# Date: [Date]
-# Version: 1.0
-# Supported ROS Distributions: Melodic, Noetic
-#==============================================================================
+# Installs all required ROS packages via apt-get only
 
-# Colors for output formatting
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -48,110 +35,76 @@ fi
 
 print_status "Installing packages for ROS $ROS_DISTRO"
 
-#==============================================================================
-# SYSTEM UPDATE
-#==============================================================================
+# Update package lists
 print_status "Updating package lists..."
-sudo apt update
+sudo apt-get update
 
-#==============================================================================
-# SENSOR HARDWARE PACKAGES
-#==============================================================================
-print_status "Installing sensor hardware packages..."
+# Install all packages in one comprehensive command
+print_status "Installing all ROS packages..."
+sudo apt-get install -y \
+    ros-$ROS_DISTRO-realsense2-camera \
+    ros-$ROS_DISTRO-realsense2-description \
+    ros-$ROS_DISTRO-rplidar-ros \
+    ros-$ROS_DISTRO-tf2-ros \
+    ros-$ROS_DISTRO-tf2-geometry-msgs \
+    ros-$ROS_DISTRO-tf \
+    ros-$ROS_DISTRO-sensor-msgs \
+    ros-$ROS_DISTRO-geometry-msgs \
+    ros-$ROS_DISTRO-nav-msgs \
+    ros-$ROS_DISTRO-std-msgs \
+    ros-$ROS_DISTRO-image-transport \
+    ros-$ROS_DISTRO-cv-bridge \
+    ros-$ROS_DISTRO-laser-geometry \
+    ros-$ROS_DISTRO-rtabmap-ros \
+    ros-$ROS_DISTRO-rtabmap-launch \
+    ros-$ROS_DISTRO-hector-mapping \
+    ros-$ROS_DISTRO-hector-slam \
+    ros-$ROS_DISTRO-hector-slam-launch \
+    ros-$ROS_DISTRO-hector-nav-msgs \
+    ros-$ROS_DISTRO-hector-trajectory-server \
+    ros-$ROS_DISTRO-hector-geotiff \
+    ros-$ROS_DISTRO-hector-compressed-map-transport \
+    ros-$ROS_DISTRO-gmapping \
+    ros-$ROS_DISTRO-navigation \
+    ros-$ROS_DISTRO-move-base \
+    ros-$ROS_DISTRO-nav-core \
+    ros-$ROS_DISTRO-base-local-planner \
+    ros-$ROS_DISTRO-global-planner \
+    ros-$ROS_DISTRO-navfn \
+    ros-$ROS_DISTRO-carrot-planner \
+    ros-$ROS_DISTRO-costmap-2d \
+    ros-$ROS_DISTRO-voxel-grid \
+    ros-$ROS_DISTRO-costmap-converter \
+    ros-$ROS_DISTRO-clear-costmap-recovery \
+    ros-$ROS_DISTRO-rotate-recovery \
+    ros-$ROS_DISTRO-dynamic-reconfigure \
+    ros-$ROS_DISTRO-robot-localization \
+    ros-$ROS_DISTRO-amcl \
+    ros-$ROS_DISTRO-map-server \
+    ros-$ROS_DISTRO-imu-filter-madgwick \
+    ros-$ROS_DISTRO-rviz \
+    ros-$ROS_DISTRO-rqt \
+    ros-$ROS_DISTRO-rqt-common-plugins \
+    ros-$ROS_DISTRO-rqt-robot-plugins \
+    ros-$ROS_DISTRO-diagnostic-msgs \
+    ros-$ROS_DISTRO-diagnostic-updater \
+    ros-$ROS_DISTRO-joint-state-publisher \
+    ros-$ROS_DISTRO-robot-state-publisher \
+    ros-$ROS_DISTRO-urdf \
+    ros-$ROS_DISTRO-xacro \
+    ros-$ROS_DISTRO-teleop-twist-keyboard \
+    ros-$ROS_DISTRO-teleop-twist-joy
 
-# RealSense Camera
-print_status "Installing RealSense camera packages..."
-sudo apt install -y ros-$ROS_DISTRO-realsense2-camera
-sudo apt install -y ros-$ROS_DISTRO-realsense2-description
+# Try to install spatio-temporal voxel layer if available
+print_status "Attempting to install spatio-temporal voxel layer..."
+if sudo apt-get install -y ros-$ROS_DISTRO-spatio-temporal-voxel-layer 2>/dev/null; then
+    print_success "spatio-temporal-voxel-layer installed via apt!"
+else
+    print_warning "spatio-temporal-voxel-layer not available via apt, will need manual build"
+fi
 
-# RPLidar
-print_status "Installing RPLidar packages..."
-sudo apt install -y ros-$ROS_DISTRO-rplidar-ros
-
-#==============================================================================
-# CORE ROS PACKAGES
-#==============================================================================
-print_status "Installing core ROS packages..."
-
-# Transform libraries
-sudo apt install -y ros-$ROS_DISTRO-tf2-ros
-sudo apt install -y ros-$ROS_DISTRO-tf2-geometry-msgs
-
-# Message packages
-sudo apt install -y ros-$ROS_DISTRO-sensor-msgs
-sudo apt install -y ros-$ROS_DISTRO-geometry-msgs
-sudo apt install -y ros-$ROS_DISTRO-nav-msgs
-
-# Image processing
-sudo apt install -y ros-$ROS_DISTRO-image-transport
-sudo apt install -y ros-$ROS_DISTRO-cv-bridge
-
-# Laser geometry
-sudo apt install -y ros-$ROS_DISTRO-laser-geometry
-
-#==============================================================================
-# SLAM PACKAGES
-#==============================================================================
-print_status "Installing SLAM packages..."
-
-# RTAB-Map SLAM
-print_status "Installing RTAB-Map packages..."
-sudo apt install -y ros-$ROS_DISTRO-rtabmap-ros
-sudo apt install -y ros-$ROS_DISTRO-rtabmap-launch
-
-# Hector SLAM
-print_status "Installing Hector SLAM packages..."
-sudo apt install -y ros-$ROS_DISTRO-hector-mapping
-sudo apt install -y ros-$ROS_DISTRO-hector-slam
-sudo apt install -y ros-$ROS_DISTRO-hector-slam-launch
-sudo apt install -y ros-$ROS_DISTRO-hector-nav-msgs
-sudo apt install -y ros-$ROS_DISTRO-hector-trajectory-server
-sudo apt install -y ros-$ROS_DISTRO-hector-geotiff
-sudo apt install -y ros-$ROS_DISTRO-hector-compressed-map-transport
-
-# GMapping SLAM
-print_status "Installing GMapping packages..."
-sudo apt install -y ros-$ROS_DISTRO-gmapping
-
-#==============================================================================
-# LOCALIZATION AND NAVIGATION
-#==============================================================================
-print_status "Installing localization and navigation packages..."
-
-# Robot Localization (EKF/UKF)
-sudo apt install -y ros-$ROS_DISTRO-robot-localization
-
-# Navigation stack
-sudo apt install -y ros-$ROS_DISTRO-move-base
-sudo apt install -y ros-$ROS_DISTRO-amcl
-sudo apt install -y ros-$ROS_DISTRO-map-server
-
-# IMU filtering
-sudo apt install -y ros-$ROS_DISTRO-imu-filter-madgwick
-
-#==============================================================================
-# VISUALIZATION AND UTILITIES
-#==============================================================================
-print_status "Installing visualization and utility packages..."
-
-# RViz
-sudo apt install -y ros-$ROS_DISTRO-rviz
-
-# RQT tools
-sudo apt install -y ros-$ROS_DISTRO-rqt
-sudo apt install -y ros-$ROS_DISTRO-rqt-common-plugins
-sudo apt install -y ros-$ROS_DISTRO-rqt-robot-plugins
-
-# Diagnostic tools
-sudo apt install -y ros-$ROS_DISTRO-diagnostic-msgs
-sudo apt install -y ros-$ROS_DISTRO-diagnostic-updater
-
-#==============================================================================
-# INSTALLATION VERIFICATION
-#==============================================================================
+# Verification of key packages
 print_status "Verifying installation..."
-
-# Check if key packages are installed
 key_packages=(
     "ros-$ROS_DISTRO-realsense2-camera"
     "ros-$ROS_DISTRO-rplidar-ros"
@@ -159,6 +112,9 @@ key_packages=(
     "ros-$ROS_DISTRO-hector-mapping"
     "ros-$ROS_DISTRO-gmapping"
     "ros-$ROS_DISTRO-robot-localization"
+    "ros-$ROS_DISTRO-navigation"
+    "ros-$ROS_DISTRO-nav-core"
+    "ros-$ROS_DISTRO-costmap-2d"
 )
 
 failed_packages=()
@@ -177,9 +133,7 @@ else
     done
 fi
 
-#==============================================================================
-# INSTALLATION SUMMARY
-#==============================================================================
+# Installation summary
 echo ""
 echo "=========================================="
 echo "    ROS PACKAGES INSTALLATION COMPLETE"
@@ -188,6 +142,7 @@ echo ""
 print_success "Successfully installed packages for:"
 echo "  ✓ Sensor Hardware (RealSense, RPLidar)"
 echo "  ✓ SLAM Systems (RTAB-Map, Hector, GMapping)"
+echo "  ✓ Complete Navigation Stack (Move Base, Costmaps, Planners)"
 echo "  ✓ Localization (Robot Localization, AMCL)"
 echo "  ✓ Navigation (Move Base, Map Server)"
 echo "  ✓ Visualization (RViz, RQT tools)"
@@ -197,6 +152,8 @@ print_warning "Note: The following packages need to be built locally:"
 echo "  - my_imu_package (your custom IMU package)"
 echo "  - lam_pkg (your custom configuration package)"
 echo "  - mapping_pkg (your custom mapping package)"
+echo "  - smart_wheelchair_stvl_nav (should now build successfully)"
+echo "  - spatio-temporal-voxel-layer (if not available via apt)"
 echo ""
 echo "=========================================="
 echo "             NEXT STEPS"
@@ -206,23 +163,13 @@ echo "1. Source ROS environment:"
 echo "   source /opt/ros/$ROS_DISTRO/setup.bash"
 echo ""
 echo "2. Navigate to your workspace and build:"
-echo "   cd ~/catkin_ws"
-echo "   catkin_make"
+echo "   cd ~/ws_wheelchair"
+echo "   catkin build"
 echo ""
 echo "3. Source your workspace:"
-echo "   source ~/catkin_ws/devel/setup.bash"
+echo "   source ~/ws_wheelchair/devel/setup.bash"
 echo ""
 echo "4. Test your installation:"
-echo "   roslaunch your_package your_launch_file.launch"
+echo "   roslaunch smart_wheelchair_stvl_nav your_launch_file.launch"
 echo ""
-echo "=========================================="
-echo "           USEFUL COMMANDS"
-echo "=========================================="
-echo ""
-echo "• Save map:           rosrun map_server map_saver -f my_map"
-echo "• View TF tree:       rosrun rqt_tf_tree rqt_tf_tree"
-echo "• Monitor topics:     rostopic list"
-echo "• Check nodes:        rosnode list"
-echo "• RQT tools:          rqt"
-echo "• System diagnostics: rosrun rqt_runtime_monitor rqt_runtime_monitor"
-echo ""
+print_status "Installation script completed successfully!"
