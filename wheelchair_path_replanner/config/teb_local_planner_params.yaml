@@ -1,0 +1,81 @@
+TebLocalPlannerROS:
+  # Trajectory configuration
+  teb_autosize: True
+  dt_ref: 0.3
+  dt_hysteresis: 0.1
+  max_samples: 500
+  global_plan_overwrite_orientation: True
+  allow_init_with_backwards_motion: False
+  max_global_plan_lookahead_dist: 3.0
+  global_plan_viapoint_sep: -1
+  global_plan_prune_distance: 1
+  exact_arc_length: False
+  feasibility_check_no_poses: 3  # Increased for wheelchair safety
+  publish_feedback: False
+  
+  # Robot configuration - Wheelchair specific
+  max_vel_x: 0.3  # Conservative for wheelchair
+  max_vel_x_backwards: 0.1  # Very slow reverse
+  max_vel_y: 0.0
+  max_vel_theta: 0.2  # Slow turning for passenger comfort
+  acc_lim_x: 0.3  # Gentle acceleration
+  acc_lim_theta: 0.3  # Gentle angular acceleration
+  min_turning_radius: 0.0  # differential drive
+  wheelbase: 0.0
+  cmd_angle_instead_rotvel: False
+  
+  # GoalTolerance
+  xy_goal_tolerance: 0.2  # Slightly larger for wheelchair
+  yaw_goal_tolerance: 0.15
+  free_goal_vel: False
+  complete_global_plan: True
+  
+  # Obstacles - Enhanced for dynamic obstacles
+  min_obstacle_dist: 0.4  # Larger safety margin for wheelchair
+  inflation_dist: 0.7
+  dynamic_obstacle_inflation_dist: 0.8  # Extra margin for moving obstacles
+  include_dynamic_obstacles: True
+  include_costmap_obstacles: True
+  costmap_obstacles_behind_robot_dist: 2.0  # Larger for wheelchair
+  obstacle_poses_affected: 20
+  
+  # Optimization
+  no_inner_iterations: 5
+  no_outer_iterations: 4
+  optimization_activate: True
+  optimization_verbose: False
+  penalty_epsilon: 0.1
+  obstacle_cost_exponent: 4
+  weight_max_vel_x: 2
+  weight_max_vel_theta: 1
+  weight_acc_lim_x: 1
+  weight_acc_lim_theta: 1
+  weight_kinematics_nh: 1000
+  weight_kinematics_forward_drive: 1
+  weight_kinematics_turning_radius: 1
+  weight_optimaltime: 1  # Reduced - comfort over speed
+  weight_shortest_path: 0
+  weight_obstacle: 150  # Increased obstacle avoidance weight
+  weight_inflation: 0.3
+  weight_dynamic_obstacle: 15  # High weight for dynamic obstacles
+  weight_dynamic_obstacle_inflation: 0.3
+  weight_viapoint: 1
+  weight_adapt_factor: 2
+  
+  # Homotopy Class Planner - For alternative paths around obstacles
+  enable_homotopy_class_planning: True
+  enable_multithreading: True
+  max_number_classes: 3  # Reduced for wheelchair application
+  selection_cost_hysteresis: 1.0
+  selection_prefer_initial_plan: 0.95  # Prefer smoother paths
+  selection_obst_cost_scale: 100.0
+  selection_alternative_time_cost: False
+  
+  # Recovery
+  shrink_horizon_backup: True
+  shrink_horizon_min_duration: 10
+  oscillation_recovery: True
+  oscillation_v_eps: 0.1
+  oscillation_omega_eps: 0.1
+  oscillation_recovery_min_duration: 10
+  oscillation_filter_duration: 10

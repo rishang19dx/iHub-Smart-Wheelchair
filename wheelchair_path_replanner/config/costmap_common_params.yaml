@@ -1,0 +1,27 @@
+# Obstacle avoidance parameters - Enhanced for dynamic obstacles
+obstacle_range: 3.0
+raytrace_range: 3.5
+footprint: [[-0.3, -0.3], [-0.3, 0.3], [0.3, 0.3], [0.3, -0.3]]
+
+# Inflation parameters - Optimized for TEB
+inflation_radius: 0.6
+cost_scaling_factor: 5.0
+
+# TEB-specific costmap parameters
+track_unknown_space: true
+combination_method: 1
+
+# Sensor configuration - Enhanced for dynamic obstacles
+observation_sources: laser_scan_sensor
+
+laser_scan_sensor:
+  sensor_frame: laser_frame  # Change to your LiDAR frame
+  data_type: LaserScan
+  topic: /scan
+  marking: true
+  clearing: true
+  min_obstacle_height: 0.0
+  max_obstacle_height: 2.0
+  obstacle_range: 3.0
+  raytrace_range: 3.5
+  expected_update_rate: 0.0

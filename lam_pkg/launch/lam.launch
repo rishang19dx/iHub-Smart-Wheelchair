@@ -3,15 +3,32 @@
  <include file="$(find my_imu_package)/launch/my_imu_with_rviz.launch" ></include>
  <include file="$(find realsense2_camera)/launch/rs_camera.launch" ></include>
  
-  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_to_base_link" args="0 0 -0.45 0 0 0  base_link camera_link" />
+  <node pkg="tf2_ros" 
+    type="static_transform_publisher" 
+    name="camera_link_to_base_link" 
+    args="0 0 -0.45 0 0 0  base_link camera_link" />
+  
   <include file="$(find rplidar_ros)/launch/rplidar_a1.launch" ></include>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_to_base_link" args="0 0 0 0 0 0 base_link imu_link" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_camera_link" args="0 0 0 0 0 0 camera_link camera__color_optical_frame" />
+  <node pkg="tf2_ros" 
+    type="static_transform_publisher" 
+    name="imu_to_base_link" 
+    args="0 0 0 0 0 0 base_link imu_link" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_camera_to_camera_link" args="0 0 0 0 0 0  camera_link camera__depth_optical_frame" />
+  <node pkg="tf2_ros" 
+    type="static_transform_publisher" 
+    name="camera_to_camera_link" 
+    args="0 0 0 0 0 0 camera_link camera__color_optical_frame" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_base_link" args="0 0 -0.15 1.57 0 0 base_link laser" />
+  <node pkg="tf2_ros" 
+    type="static_transform_publisher" 
+    name="depth_camera_to_camera_link" 
+    args="0 0 0 0 0 0  camera_link camera__depth_optical_frame" />
+
+  <node pkg="tf2_ros" 
+    type="static_transform_publisher" 
+    name="laser_to_base_link" 
+    args="0 0 -0.15 1.57 0 0 base_link laser" />
 
   <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="laser_to_camera_link" args="0 0 0.3 1.57 0 0 camera_link laser" /> -->
 
@@ -30,20 +47,5 @@
     <param name="frame_id" value="base_link"/>
     <rosparam command="load" file="$(find lam_pkg)/config/ekf.yaml" />
   </node>
-  
-  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
-    <arg name="rtabmap_args"
-         value="--delete_db_on_start --Optimizer/GravitySigma 0.3"/>
-    <!-- topics -->
-    <arg name="depth_topic"            value="/camera/depth/image_rect_raw"/>
-    <arg name="rgb_topic"              value="/camera/color/image_raw"/>
-    <arg name="camera_info_topic"      value="/camera/color/camera_info"/>
-    <arg name="approx_sync"            value="true"/>
-    <arg name="subscribe_scan"         value="false"/>
-    <arg name="scan_topic"             value="/scan"/>
-    <arg name="odom_topic"             value="/odometry/filtered"/>
-    <arg name="visual_odometry"        value="false"/>
-    <arg name="frame_id" value="base_link" />
-  </include>
 
 </launch>

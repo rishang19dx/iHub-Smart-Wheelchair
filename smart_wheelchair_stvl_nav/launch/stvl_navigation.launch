@@ -1,29 +1,197 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Smart Wheelchair STVL Navigation Launch File
+  
+  This launch file sets up the complete navigation stack for a smart wheelchair system
+  including mapping, localization, path planning, and visualization components.
+  
+  Dependencies:
+  - map_server
+  - lam_pkg (Laser-based odometry/SLAM)
+  - smart_wheelchair_stvl_nav
+  - move_base
+  - rviz (optional)
+  
+  Usage:
+    roslaunch smart_wheelchair_stvl_nav navigation.launch
+    roslaunch smart_wheelchair_stvl_nav navigation.launch open_rviz:=false
+    roslaunch smart_wheelchair_stvl_nav navigation.launch map_file:=/path/to/custom/map.yaml
+-->
+
 <launch>
-  <!-- Arguments -->
-  <arg name="open_rviz" default="true"/>
-  <arg name="move_forward_only" default="true"/>
-  <arg name="map_file" default="$(find smart_wheelchair_stvl_nav)/maps/map.yaml"/>
-
-  <!-- Map server -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find smart_wheelchair_stvl_nav)/maps/map.yaml"/>
-
-  <!-- laser odometry-->
-  <include file="$(find lam_pkg)/launch/odometry_slam.launch"/>   
-  <!-- AMCL -->
-  <include file="$(find smart_wheelchair_stvl_nav)/launch/amcl.launch"/>
-
-  <!-- move_base -->
+  <!-- ========================================= -->
+  <!-- LAUNCH ARGUMENTS                          -->
+  <!-- ========================================= -->
+  
+  <!-- Enable/disable RViz visualization -->
+  <arg name="open_rviz" 
+       default="true" 
+       doc="Launch RViz for visualization and monitoring"/>
+  
+  <!-- Restrict movement to forward only (safety feature) -->
+  <arg name="move_forward_only" 
+       default="true" 
+       doc="Limit robot movement to forward direction only for safety"/>
+  
+  <!-- Map file path for navigation -->
+  <arg name="map_file" 
+       default="$(find smart_wheelchair_stvl_nav)/maps/map.yaml" 
+       doc="Path to the map YAML file for navigation"/>
+  
+  <!-- Namespace for the wheelchair (useful for multi-robot systems) -->
+  <arg name="robot_namespace" 
+       default="" 
+       doc="Namespace for the robot (leave empty for single robot)"/>
+  
+  <!-- ========================================= -->
+  <!-- CORE NAVIGATION COMPONENTS                -->
+  <!-- ========================================= -->
+  
+  <!-- Map Server Node -->
+  <!-- Provides the static map for localization and path planning -->
+  <node name="map_server" 
+        pkg="map_server" 
+        type="map_server" 
+        args="$(arg map_file)"
+        output="screen"
+        required="true">
+    <remap from="map" to="map"/>
+    <remap from="map_metadata" to="map_metadata"/>
+    <param name="frame_id" value="map"/>
+  </node>
+  
+  <!-- Laser-based Odometry and SLAM -->
+  <!-- Provides odometry estimation using laser scan matching -->
+  <include file="$(find lam_pkg)/launch/lam.launch">
+    <!-- <arg name="scan_topic" value="scan"/>
+    <arg name="odom_frame" value="odom"/>
+    <arg name="base_frame" value="base_link"/> -->
+  </include>
+  
+  <!-- AMCL Localization (Currently Disabled) -->
+  <!-- Adaptive Monte Carlo Localization for robot pose estimation -->
+  <!-- Uncomment the following section if you want to use AMCL instead of SLAM -->
+  <!--
+  <include file="$(find smart_wheelchair_stvl_nav)/launch/amcl.launch">
+    <arg name="scan_topic" value="scan"/>
+    <arg name="map_topic" value="map"/>
+    <arg name="initial_pose_x" value="0.0"/>
+    <arg name="initial_pose_y" value="0.0"/>
+    <arg name="initial_pose_a" value="0.0"/>
+  </include>
+  -->
+  
+  <!-- Move Base Navigation Stack -->
+  <!-- Handles path planning, obstacle avoidance, and robot control -->
   <include file="$(find smart_wheelchair_stvl_nav)/launch/move_base.launch">
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
-  </include> 
+    <arg name="cmd_vel_topic" value="cmd_vel"/>
+    <arg name="odom_topic" value="odom"/>
+  </include>
   
-<!--node pkg="smart_wheelchair_stvl_nav" name="movebase_client_py" type="goal_set.py" output="screen"/>
-<node pkg="smart_wheelchair_stvl_nav" name="goal_letter" type="sock.py" output="screen"/-->
-  <!-- rviz -->
-  <group if="$(arg open_rviz)"> 
-    <node pkg="rviz" type="rviz" name="rviz" required="true"
-          args="-d $(find smart_wheelchair_stvl_nav)/rviz/smart_wheelchair_stvl_nav.rviz"/>
+  <!-- ========================================= -->
+  <!-- GOAL MANAGEMENT NODES (Currently Disabled) -->
+  <!-- ========================================= -->
+  
+  <!-- Goal Setting Client -->
+  <!-- Handles navigation goal requests and management -->
+  <!--
+  <node pkg="smart_wheelchair_stvl_nav" 
+        name="movebase_client_py" 
+        type="goal_set.py" 
+        output="screen"
+        respawn="true"
+        respawn_delay="5">
+    <param name="default_timeout" value="60.0"/>
+    <param name="goal_tolerance" value="0.5"/>
+  </node>
+  -->
+  
+  <!-- Socket Communication Node -->
+  <!-- Handles external communication for goal commands -->
+  <!--
+  <node pkg="smart_wheelchair_stvl_nav" 
+        name="goal_letter" 
+        type="sock.py" 
+        output="screen"
+        respawn="true"
+        respawn_delay="5">
+    <param name="port" value="8080"/>
+    <param name="host" value="localhost"/>
+  </node>
+  -->
+  
+  <!-- ========================================= -->
+  <!-- VISUALIZATION AND MONITORING             -->
+  <!-- ========================================= -->
+  
+  <!-- RViz Visualization -->
+  <!-- Launch RViz for system monitoring and debugging -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" 
+          type="rviz" 
+          name="rviz" 
+          required="false"
+          args="-d $(find smart_wheelchair_stvl_nav)/rviz/smart_wheelchair_stvl_nav.rviz"
+          output="screen">
+      <!-- RViz configuration parameters -->
+      <param name="display_config" 
+             value="$(find smart_wheelchair_stvl_nav)/rviz/smart_wheelchair_stvl_nav.rviz"/>
+    </node>
   </group>
+  
+  <!-- ========================================= -->
+  <!-- SYSTEM MONITORING AND DIAGNOSTICS        -->
+  <!-- ========================================= -->
+  
+  <!-- Robot State Publisher (if needed) -->
+  <!-- Publishes robot's kinematic tree to tf -->
+  <!--
+  <node name="robot_state_publisher" 
+        pkg="robot_state_publisher" 
+        type="robot_state_publisher"
+        output="screen">
+    <param name="publish_frequency" value="50.0"/>
+  </node>
+  -->
+  
+  <!-- Diagnostic Aggregator (Optional) -->
+  <!-- Aggregates system diagnostics for health monitoring -->
+  <!--
+  <node name="diagnostic_aggregator" 
+        pkg="diagnostic_aggregator" 
+        type="aggregator_node"
+        output="screen">
+    <rosparam file="$(find smart_wheelchair_stvl_nav)/config/diagnostic_analyzers.yaml" 
+              command="load"/>
+  </node>
+  -->
+  
+  <!-- ========================================= -->
+  <!-- SAFETY AND EMERGENCY SYSTEMS             -->
+  <!-- ========================================= -->
+  
+  <!-- Emergency Stop Monitor (if available) -->
+  <!--
+  <node name="emergency_stop_monitor" 
+        pkg="smart_wheelchair_stvl_nav" 
+        type="emergency_stop.py"
+        output="screen"
+        required="true">
+    <param name="emergency_topic" value="emergency_stop"/>
+    <param name="cmd_vel_topic" value="cmd_vel"/>
+  </node>
+  -->
+  
+  <!-- System Status Publisher -->
+  <!--
+  <node name="system_status" 
+        pkg="smart_wheelchair_stvl_nav" 
+        type="system_status.py"
+        output="screen">
+    <param name="publish_rate" value="1.0"/>
+    <param name="status_topic" value="system_status"/>
+  </node>
+  -->
 
 </launch>

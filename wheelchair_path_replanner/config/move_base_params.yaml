@@ -1,0 +1,27 @@
+# Move base parameters - Optimized for TEB
+shutdown_costmaps: false
+controller_frequency: 10.0
+planner_patience: 8.0  # Increased for TEB planning time
+controller_patience: 15.0
+conservative_reset_dist: 3.0
+recovery_behavior_enabled: true
+clearing_rotation_allowed: true
+oscillation_timeout: 15.0  # Increased for TEB
+oscillation_distance: 0.3
+
+# Planners
+base_global_planner: navfn/NavfnROS
+base_local_planner: teb_local_planner/TebLocalPlannerROS
+
+# Recovery behaviors for TEB
+recovery_behaviors:
+  - name: 'conservative_reset'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  - name: 'rotate_recovery'
+    type: 'rotate_recovery/RotateRecovery'
+  - name: 'aggressive_reset'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+
+# TEB-specific move_base parameters
+planner_frequency: 2.0  # Lower frequency for complex TEB planning
+max_planning_retries: 3
